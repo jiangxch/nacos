@@ -63,6 +63,11 @@ public class HostReactor {
         this(eventDispatcher, serverProxy, cacheDir, false, UtilAndComs.DEFAULT_POLLING_THREAD_COUNT);
     }
 
+    /**
+     *
+     * @param eventDispatcher hostReactor获取server端的事件信息，有eventDispatcher派发到本地
+     * @param serverProxy
+     */
     public HostReactor(EventDispatcher eventDispatcher, NamingProxy serverProxy, String cacheDir,
                        boolean loadCacheAtStart, int pollingThreadCount) {
 
@@ -86,7 +91,9 @@ public class HostReactor {
         }
 
         this.updatingMap = new ConcurrentHashMap<String, Object>();
+        //容错管理者
         this.failoverReactor = new FailoverReactor(this, cacheDir);
+        //获取server数据管理者,nacos通过2种方式获取server数据，long pull和udp的广播方式
         this.pushReceiver = new PushReceiver(this);
     }
 

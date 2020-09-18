@@ -91,10 +91,14 @@ public class NacosNamingService implements NamingService {
         InitUtils.initWebRootContext();
         initCacheDir();
         initLogName(properties);
-
+        // 构造器中启动线程从BlockQueue中获取ServiceInfo执行Listen的onEvent方法，进行时间通知
+        // 数据从server端获取，pull或者push方式获取，有hostReactor负责管理
         eventDispatcher = new EventDispatcher();
+        // 获取serverList，进行login获取accessToken，注册provider，consumer，与server进行连接的代理
         serverProxy = new NamingProxy(namespace, endpoint, serverList, properties);
+        // 初始化心跳管理，心跳实现：client发送心跳包，在server维护收到每个client发送heartBeat的时间，通过定时任务判断是否超时
         beatReactor = new BeatReactor(serverProxy, initClientBeatThreadCount(properties));
+        // 获取server端的消息,本地文件容错，
         hostReactor = new HostReactor(eventDispatcher, serverProxy, cacheDir, isLoadCacheAtStart(properties),
             initPollingThreadCount(properties));
     }
@@ -189,7 +193,7 @@ public class NacosNamingService implements NamingService {
 
     @Override
     public void registerInstance(String serviceName, String groupName, Instance instance) throws NacosException {
-
+        //如果是临时节点，需要发送心跳，响应的server也需要判断service是否ephemeral,此类service不需要判断心跳是否超时
         if (instance.isEphemeral()) {
             BeatInfo beatInfo = new BeatInfo();
             beatInfo.setServiceName(NamingUtils.getGroupedName(serviceName, groupName));
@@ -200,7 +204,8 @@ public class NacosNamingService implements NamingService {
             beatInfo.setMetadata(instance.getMetadata());
             beatInfo.setScheduled(false);
             beatInfo.setPeriod(instance.getInstanceHeartBeatInterval());
-
+            // 一个service，启动一个定时任务放入线程池中执行
+            // [serviceName]@@[groupName]
             beatReactor.addBeatInfo(NamingUtils.getGroupedName(serviceName, groupName), beatInfo);
         }
 

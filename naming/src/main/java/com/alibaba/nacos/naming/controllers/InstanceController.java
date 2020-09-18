@@ -115,7 +115,7 @@ public class InstanceController {
 				Constants.DEFAULT_NAMESPACE_ID);
 
 		final Instance instance = parseInstance(request);
-
+		// Map[namespaceId,Map<service,cluster>]
 		serviceManager.registerInstance(namespaceId, serviceName, instance);
 		return "ok";
 	}

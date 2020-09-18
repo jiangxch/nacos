@@ -99,7 +99,7 @@ public class NamingProxy {
                 this.nacosDomain = serverList;
             }
         }
-
+        // 获取servletList，对serverList登录获取accessToken
         initRefreshTask();
     }
 
@@ -114,7 +114,7 @@ public class NamingProxy {
                 return t;
             }
         });
-
+        // 无论是否配置endPoint，如果serverList=0，尝试请求endPonit获取serverList
         executorService.scheduleWithFixedDelay(new Runnable() {
             @Override
             public void run() {
@@ -122,7 +122,7 @@ public class NamingProxy {
             }
         }, 0, vipSrvRefInterMillis, TimeUnit.MILLISECONDS);
 
-
+        // 尝试用户名密码对serverList中的每台机器进行登录
         executorService.scheduleWithFixedDelay(new Runnable() {
             @Override
             public void run() {
@@ -163,6 +163,9 @@ public class NamingProxy {
         return null;
     }
 
+    /**
+     * 从endPoint刷新nacos 的server list
+     */
     private void refreshSrvIfNeed() {
         try {
 
